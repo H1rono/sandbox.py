@@ -16,9 +16,26 @@ hello = "hello:hello"
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
-[tool.rye]
-managed = true
-dev-dependencies = []
-
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "ruff>=0.4.8",
+]
+
+[tool.ruff]
+# Set the maximum line length to 79.
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.ruff.lint]
+# Inherit rules from pycodestyle, pyflakes, flake8-simplify, isort
+select = ["F", "E", "SIM", "I"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-comma = true
