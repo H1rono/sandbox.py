@@ -5,12 +5,15 @@ description = "Python sandbox"
 authors = [
     { name = "H1rono", email = "hronok66@gmail.com" }
 ]
-dependencies = []
+dependencies = [
+    "aiohttp>=3.9.5",
+]
 readme = "README.md"
 requires-python = ">= 3.10"
 
 [project.scripts]
 hello = "hello:hello"
+aiohttp-ping = "aiohttp_sand:serve"
 
 [build-system]
 requires = ["setuptools"]
