@@ -30,10 +30,13 @@ mypy-extensions==1.0.0
 pyyaml==6.0.1
     # via sandbox-py
 ruff==0.4.8
+sqlalchemy==2.0.30
+    # via sandbox-py
 tomli==2.0.1
     # via mypy
 types-pyyaml==6.0.12.20240311
 typing-extensions==4.12.2
     # via mypy
+    # via sqlalchemy
 yarl==1.9.4
     # via aiohttp

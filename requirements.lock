@@ -26,5 +26,9 @@ multidict==6.0.5
     # via yarl
 pyyaml==6.0.1
     # via sandbox-py
+sqlalchemy==2.0.30
+    # via sandbox-py
+typing-extensions==4.12.2
+    # via sqlalchemy
 yarl==1.9.4
     # via aiohttp
