@@ -1,6 +1,8 @@
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any
+from typing import Any, AsyncIterator
 
+import aiopg.sa
 import yaml
 from aiohttp import web
 
@@ -23,3 +25,13 @@ def load_config(app: web.Application, path: str | None = None) -> None:
 
 def setup_routes(app: web.Application) -> None:
     app.router.add_get("/", index)
+
+
+async def pg_context(app: web.Application) -> AsyncIterator[None]:
+    conf = app["config"]["postgres"]
+    assert isinstance(conf, Mapping)
+    engine = await aiopg.sa.create_engine(**conf)
+    app["db"] = engine
+    yield
+    app["db"].close()
+    await app["db"].wait_closed()
