@@ -1,14 +1,23 @@
-from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, AsyncIterator
+from typing import Any
 
-import aiopg.sa
 import yaml
 from aiohttp import web
+
+from . import db
 
 
 async def index(request: web.Request) -> web.Response:
     return web.Response(text="Hello, aiohttp!")
+
+
+async def get_questions(request: web.Request) -> web.Response:
+    async with request.app["db"].acquire() as conn:
+        print(type(conn))
+        cursor = await conn.execute(db.question.select())
+        records = await cursor.fetchall()
+        questions = [dict(q) for q in records]
+        return web.Response(text=str(questions))
 
 
 def get_config(path: str | None = None) -> Any:
@@ -25,13 +34,4 @@ def load_config(app: web.Application, path: str | None = None) -> None:
 
 def setup_routes(app: web.Application) -> None:
     app.router.add_get("/", index)
-
-
-async def pg_context(app: web.Application) -> AsyncIterator[None]:
-    conf = app["config"]["postgres"]
-    assert isinstance(conf, Mapping)
-    engine = await aiopg.sa.create_engine(**conf)
-    app["db"] = engine
-    yield
-    app["db"].close()
-    await app["db"].wait_closed()
+    app.router.add_get("/questions", get_questions)

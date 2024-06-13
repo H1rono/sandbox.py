@@ -1,33 +1,38 @@
-from sqlalchemy import Column, Date, Engine, ForeignKey, Integer, MetaData, String, Table
+from collections.abc import Mapping
+from typing import AsyncIterator
 
-meta = MetaData()
+import aiopg.sa
+import sqlalchemy as sa
+from aiohttp import web
 
-question = Table(
+meta = sa.MetaData()
+
+question = sa.Table(
     "question",
     meta,
-    Column("id", Integer, primary_key=True),
-    Column("question_text", String(200), nullable=False),
-    Column("pub_date", Date, nullable=False),
+    sa.Column("id", sa.Integer, primary_key=True),
+    sa.Column("question_text", sa.String(200), nullable=False),
+    sa.Column("pub_date", sa.Date, nullable=False),
 )
 
-choice = Table(
+choice = sa.Table(
     "choice",
     meta,
-    Column("id", Integer, primary_key=True),
-    Column("choice_text", String(200), nullable=False),
-    Column("votes", Integer, server_default="0", nullable=False),
-    Column("question_id", Integer, ForeignKey("question.id", ondelete="CASCADE")),
+    sa.Column("id", sa.Integer, primary_key=True),
+    sa.Column("choice_text", sa.String(200), nullable=False),
+    sa.Column("votes", sa.Integer, server_default="0", nullable=False),
+    sa.Column("question_id", sa.Integer, sa.ForeignKey("question.id", ondelete="CASCADE")),
 )
 
 DSN = "postgresql://{user}:{password}@{host}:{port}/{database}"
 
 
-def create_tables(engine: Engine) -> None:
-    meta = MetaData()
+def create_tables(engine: sa.Engine) -> None:
+    meta = sa.MetaData()
     meta.create_all(bind=engine, tables=[question, choice])
 
 
-def create_sample_data(engine: Engine) -> None:
+def create_sample_data(engine: sa.Engine) -> None:
     conn = engine.connect()
     conn.execute(question.insert(), [{"question_text": "What's new?", "pub_date": "2024-06-13 00:00:00+09"}])
     conn.execute(
@@ -39,3 +44,13 @@ def create_sample_data(engine: Engine) -> None:
         ],
     )
     conn.close()
+
+
+async def pg_context(app: web.Application) -> AsyncIterator[None]:
+    conf = app["config"]["postgres"]
+    assert isinstance(conf, Mapping)
+    engine = await aiopg.sa.create_engine(**conf)
+    app["db"] = engine
+    yield
+    app["db"].close()
+    await app["db"].wait_closed()
