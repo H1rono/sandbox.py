@@ -8,6 +8,8 @@
 #   with-sources: false
 
 -e file:.
+aiochannel==1.2.1
+    # via sandbox-py
 aiohttp==3.9.5
     # via sandbox-py
 aiopg==1.1.0
@@ -47,3 +49,5 @@ typing-extensions==4.12.2
     # via sqlalchemy
 yarl==1.9.4
     # via aiohttp
+setuptools==70.0.0
+    # via sandbox-py
