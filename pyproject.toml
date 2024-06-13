@@ -16,6 +16,7 @@ requires-python = ">= 3.10"
 [project.scripts]
 hello = "hello:hello"
 aiohttp-serve = "aiohttp_sand:serve"
+aiohttp-polls-init-db = "polls:init_db"
 aiohttp-polls = "polls:main"
 
 [build-system]
