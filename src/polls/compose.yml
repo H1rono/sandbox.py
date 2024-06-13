@@ -1,0 +1,9 @@
+services:
+  db:
+    image: postgres:16-bookworm
+    environment:
+      - POSTGRES_PASSWORD=aiohttpdemo_pass
+      - POSTGRES_USER=aiohttpdemo_user
+      - POSTGRES_DB=aiohttpdemo_polls
+    ports:
+      - "5432:5432"
