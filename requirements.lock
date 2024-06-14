@@ -29,6 +29,10 @@ idna==3.7
 multidict==6.0.5
     # via aiohttp
     # via yarl
+numpy==1.26.4
+    # via opencv-python
+opencv-python==4.10.0.82
+    # via sandbox-py
 psycopg2-binary==2.9.9
     # via aiopg
     # via sqlalchemy
