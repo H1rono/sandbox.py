@@ -19,6 +19,7 @@ requires-python = ">= 3.10"
 [project.scripts]
 hello = "hello:hello"
 ping-pong = "hello.async_sand:run_ping_pong"
+ping-pong-mt = "hello.async_sand:run_ping_pong_mt"
 aiohttp-serve = "aiohttp_sand:serve"
 aiohttp-polls-init-db = "polls:init_db"
 aiohttp-polls = "polls:main"
