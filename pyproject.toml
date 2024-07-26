@@ -28,6 +28,7 @@ aiohttp-serve = "aiohttp_sand:serve"
 aiohttp-polls-init-db = "polls:init_db"
 aiohttp-polls = "polls:main"
 plot-sin = "plot:first_plot"
+plot-sample = "plot.samples:run_sample"
 
 [build-system]
 requires = ["setuptools"]
