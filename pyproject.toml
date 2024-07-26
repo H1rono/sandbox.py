@@ -13,6 +13,8 @@ dependencies = [
     "aiochannel>=1.2.1",
     "setuptools>=70.0.0",
     "opencv-python>=4.10.0.82",
+    "matplotlib>=3.9.1",
+    "numpy>=2.0.1",
 ]
 readme = "README.md"
 requires-python = ">= 3.10"
@@ -24,6 +26,7 @@ ping-pong-mt = "hello.async_sand:run_ping_pong_mt"
 aiohttp-serve = "aiohttp_sand:serve"
 aiohttp-polls-init-db = "polls:init_db"
 aiohttp-polls = "polls:main"
+plot-sin = "plot:first_plot"
 
 [build-system]
 requires = ["setuptools"]
