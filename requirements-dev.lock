@@ -62,6 +62,12 @@ psycopg2-binary==2.9.9
     # via sqlalchemy
 pyparsing==3.1.2
     # via matplotlib
+pyqt6==6.7.1
+    # via sandbox-py
+pyqt6-qt6==6.7.2
+    # via pyqt6
+pyqt6-sip==13.8.0
+    # via pyqt6
 python-dateutil==2.9.0.post0
     # via matplotlib
 pyyaml==6.0.1
