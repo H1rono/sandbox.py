@@ -153,5 +153,15 @@ def run_sample() -> None:
             sample8()
         case "artist0":
             artist_samples.sample0()
+        case "artist1":
+            artist_samples.sample1()
+        case "artist2":
+            artist_samples.sample2()
+        case "artist3":
+            artist_samples.sample3()
+        case "artist4":
+            artist_samples.sample4()
+        case "artist5":
+            artist_samples.sample5()
         case _:
             print(f"index {index} is not supported")
