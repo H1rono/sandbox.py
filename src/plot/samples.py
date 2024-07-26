@@ -1,8 +1,9 @@
+# ruff: noqa: E701
+
 import argparse
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 
 # samples in https://matplotlib.org/stable/tutorials/pyplot.html
 
@@ -87,7 +88,7 @@ def sample6() -> None:
     t2 = np.arange(0.0, 5.0, 0.02)
 
     # create a figure
-    fig = plt.figure()
+    _fig = plt.figure()
 
     # nrows, ncols, plot_number, where 1 <= plot_number <= nrows * ncols
     # this call is identical to plt.subplot(2, 1, 1)
@@ -117,10 +118,10 @@ def sample7() -> None:
 
 
 def sample8() -> None:
-    ax = plt.subplot()
+    _ax = plt.subplot()
     t = np.arange(0.0, 5.0, 0.01)
     s = np.cos(2 * np.pi * t)
-    line, = plt.plot(t, s, lw=2)
+    _line, = plt.plot(t, s, lw=2)
 
     # annotation comment, xy=annotated point, xytext=comment location, arrowprops=arrow properties
     plt.annotate("local max", xy=(2, 1), xytext=(3, 1.5), arrowprops={"facecolor": "black", "shrink": 0.05})
