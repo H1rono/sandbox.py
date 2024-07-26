@@ -8,15 +8,12 @@ from matplotlib.figure import Figure
 from typing_extensions import Generator, NoReturn
 
 
-class SinAnimation(FuncAnimation):
+class SinAnimationState:
     def __init__(self, fig: Figure) -> None:
         self.ax = fig.add_subplot()
         self.xdata = deque[float]()
         self.ydata = deque[float]()
         self.line, *_ = self.ax.plot(self.xdata, self.ydata, "ro")
-        super().__init__(
-            fig, self.update, frames=self.frames, init_func=self.init, blit=True, save_count=10, interval=50
-        )
 
     def init(self) -> tuple[Axes]:
         self.ax.set_xlim(0, 2 * np.pi)
@@ -42,5 +39,8 @@ class SinAnimation(FuncAnimation):
 
 def sinwave() -> None:
     fig = plt.figure()
-    _ani = SinAnimation(fig)
+    state = SinAnimationState(fig)
+    _ani = FuncAnimation(
+        fig, state.update, frames=state.frames, init_func=state.init, blit=True, save_count=10, interval=50
+    )
     plt.show()
