@@ -1,5 +1,3 @@
-# ruff: noqa: E701
-
 import argparse
 
 import matplotlib.pyplot as plt
@@ -16,7 +14,7 @@ def sample0() -> None:
 
 def sample1() -> None:
     # red 'o'
-    plt.plot([1, 2, 3, 4], [1, 4, 9, 16], 'ro')
+    plt.plot([1, 2, 3, 4], [1, 4, 9, 16], "ro")
     # xmin, xmax, ymin, ymax
     plt.axis((0, 6, 0, 20))
     plt.show()
@@ -31,11 +29,7 @@ def sample2() -> None:
 
 
 def sample3() -> None:
-    data = {
-        "a": np.arange(50),
-        "c": np.random.randint(0, 50, 50),
-        "d": np.random.randn(50)
-    }
+    data = {"a": np.arange(50), "c": np.random.randint(0, 50, 50), "d": np.random.randn(50)}
     data["b"] = data["a"] + 10 * np.random.randn(50)
     data["d"] = np.abs(data["d"]) * 100
     plt.scatter("a", "b", c="c", s="d", data=data)
@@ -67,7 +61,7 @@ def sample5() -> None:
     x = np.arange(-np.pi, np.pi, 0.3)
     y = np.sin(x)
 
-    line, = plt.plot(x, y, "-")
+    (line,) = plt.plot(x, y, "-")
     # line.set_alpha(1.0)
     # line.set_animated(False)
     line.set_antialiased(False)
@@ -81,7 +75,7 @@ def sample5() -> None:
 
 
 def sample6() -> None:
-    def f(t): # type: ignore
+    def f(t):  # type: ignore
         return np.exp(-t) * np.cos(2 * np.pi * t)
 
     t1 = np.arange(0.0, 5.0, 0.1)
@@ -121,7 +115,7 @@ def sample8() -> None:
     _ax = plt.subplot()
     t = np.arange(0.0, 5.0, 0.01)
     s = np.cos(2 * np.pi * t)
-    _line, = plt.plot(t, s, lw=2)
+    (_line,) = plt.plot(t, s, lw=2)
 
     # annotation comment, xy=annotated point, xytext=comment location, arrowprops=arrow properties
     plt.annotate("local max", xy=(2, 1), xytext=(3, 1.5), arrowprops={"facecolor": "black", "shrink": 0.05})
@@ -137,13 +131,23 @@ def run_sample() -> None:
     index = args.index
     assert isinstance(index, int)
     match index:
-        case 0: sample0()
-        case 1: sample1()
-        case 2: sample2()
-        case 3: sample3()
-        case 4: sample4()
-        case 5: sample5()
-        case 6: sample6()
-        case 7: sample7()
-        case 8: sample8()
-        case _: print(f"index {index} is not supported")
+        case 0:
+            sample0()
+        case 1:
+            sample1()
+        case 2:
+            sample2()
+        case 3:
+            sample3()
+        case 4:
+            sample4()
+        case 5:
+            sample5()
+        case 6:
+            sample6()
+        case 7:
+            sample7()
+        case 8:
+            sample8()
+        case _:
+            print(f"index {index} is not supported")
