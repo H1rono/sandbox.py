@@ -3,6 +3,8 @@ import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 
+from . import artist_samples
+
 # samples in https://matplotlib.org/stable/tutorials/pyplot.html
 
 
@@ -126,28 +128,30 @@ def sample8() -> None:
 
 def run_sample() -> None:
     parser = argparse.ArgumentParser("plot-sample")
-    parser.add_argument("index", type=int, default=0)
+    parser.add_argument("index", default="0")
     args = parser.parse_args()
     index = args.index
-    assert isinstance(index, int)
+    assert isinstance(index, str)
     match index:
-        case 0:
+        case "0":
             sample0()
-        case 1:
+        case "1":
             sample1()
-        case 2:
+        case "2":
             sample2()
-        case 3:
+        case "3":
             sample3()
-        case 4:
+        case "4":
             sample4()
-        case 5:
+        case "5":
             sample5()
-        case 6:
+        case "6":
             sample6()
-        case 7:
+        case "7":
             sample7()
-        case 8:
+        case "8":
             sample8()
+        case "artist0":
+            artist_samples.sample0()
         case _:
             print(f"index {index} is not supported")
