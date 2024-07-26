@@ -29,6 +29,7 @@ aiohttp-polls-init-db = "polls:init_db"
 aiohttp-polls = "polls:main"
 plot-sin = "plot:first_plot"
 plot-sample = "plot.samples:run_sample"
+live-sine = "plot.live:sinwave"
 
 [build-system]
 requires = ["setuptools"]
