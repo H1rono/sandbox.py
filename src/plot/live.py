@@ -4,35 +4,43 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
 from matplotlib.axes import Axes
-from typing_extensions import Any, Generator, NoReturn
+from matplotlib.figure import Figure
+from typing_extensions import Generator, NoReturn
 
 
-def sinwave() -> None:
-    fig, ax = plt.subplots()
-    xdata, ydata = deque[float](), deque[float]()
-    (line,) = ax.plot(ydata, ydata, "ro")
+class SinAnimation(FuncAnimation):
+    def __init__(self, fig: Figure) -> None:
+        self.ax = fig.add_subplot()
+        self.xdata = deque[float]()
+        self.ydata = deque[float]()
+        self.line, *_ = self.ax.plot(self.xdata, self.ydata, "ro")
+        super().__init__(
+            fig, self.update, frames=self.frames, init_func=self.init, blit=True, save_count=10, interval=50
+        )
 
-    def init() -> tuple[Axes]:
-        ax.set_xlim(0, 2 * np.pi)
-        ax.set_ylim(-1, 1)
-        return (ax,)
+    def init(self) -> tuple[Axes]:
+        self.ax.set_xlim(0, 2 * np.pi)
+        self.ax.set_ylim(-1.2, 1.2)
+        return (self.ax,)
 
-    def frames() -> Generator[float, Any, NoReturn]:
+    def update(self, frame: float) -> tuple[Axes]:
+        self.xdata.append(frame)
+        self.ydata.append(np.sin(frame))
+        if frame > 2 * np.pi:
+            xleft = self.xdata.popleft()
+            self.ydata.popleft()
+            self.ax.set_xlim(xleft, frame)
+        self.line.set_data(self.xdata, self.ydata)
+        return (self.ax,)
+
+    def frames(self) -> Generator[float, None, NoReturn]:
         v = 0.0
         while True:
             yield v
             v += 0.1
 
-    def update(frame: float) -> tuple[Axes]:
-        xdata.append(frame)
-        ydata.append(np.sin(frame))
-        if frame > 2 * np.pi:
-            xleft = xdata.popleft()
-            ydata.popleft()
-            ax.set_xlim(xleft, frame)
-            ax.tick_params("x", reset=True)
-        line.set_data(xdata, ydata)
-        return (ax,)
 
-    _ani = FuncAnimation(fig, update, frames=frames, init_func=init, blit=True, save_count=10, interval=50)
+def sinwave() -> None:
+    fig = plt.figure()
+    _ani = SinAnimation(fig)
     plt.show()
