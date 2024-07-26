@@ -100,6 +100,35 @@ def sample6() -> None:
     plt.show()
 
 
+def sample7() -> None:
+    mu, sigma = 100, 15
+    x = mu + sigma * np.random.randn(1000)
+
+    # the histogram of the data
+    n, bins, patches = plt.hist(x, 50, density=True, facecolor="b", alpha=0.75)
+
+    plt.xlabel("Smarts")
+    plt.ylabel("Probability")
+    plt.title("Histogram of IQ")
+    plt.text(60, 0.025, r"$\mu=100,\ \sigma=15$")
+    plt.axis((40, 160, 0, 0.03))
+    plt.grid(True)
+    plt.show()
+
+
+def sample8() -> None:
+    ax = plt.subplot()
+    t = np.arange(0.0, 5.0, 0.01)
+    s = np.cos(2 * np.pi * t)
+    line, = plt.plot(t, s, lw=2)
+
+    # annotation comment, xy=annotated point, xytext=comment location, arrowprops=arrow properties
+    plt.annotate("local max", xy=(2, 1), xytext=(3, 1.5), arrowprops={"facecolor": "black", "shrink": 0.05})
+
+    plt.ylim(-2, 2)
+    plt.show()
+
+
 def run_sample() -> None:
     parser = argparse.ArgumentParser("plot-sample")
     parser.add_argument("index", type=int, default=0)
@@ -114,4 +143,6 @@ def run_sample() -> None:
         case 4: sample4()
         case 5: sample5()
         case 6: sample6()
+        case 7: sample7()
+        case 8: sample8()
         case _: print(f"index {index} is not supported")
