@@ -4,6 +4,7 @@ import sys
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from threading import Event
+from typing import Any
 
 import aiochannel
 import matplotlib.pyplot as plt
@@ -60,70 +61,89 @@ def sinwave() -> None:
     plt.show()
 
 
-def channel_anime() -> None:
-    logger = _logger.getChild("channel_anime")
-    logging.getLogger("asyncio").setLevel(logging.DEBUG)
-    logging.basicConfig(stream=sys.stderr, level=logging.INFO)
-    fig, ax = plt.subplots()
-    ch: aiochannel.Channel[tuple[float, float]] = aiochannel.Channel(10)
-    xdata, ydata = deque[float](), deque[float]()
-    (line,) = ax.plot(xdata, ydata, "bo")
-    loop = asyncio.get_event_loop()
-    terminate = Event()
+class ChanAnimationHandle:
+    Frame = tuple[float, float]
 
-    async def data_gen() -> None:
-        x = 0.0
-        while not terminate.is_set():
-            y = np.exp(np.sin(x))
-            try:
-                await asyncio.wait_for(ch.put((x, y)), 0.1)
-            except asyncio.TimeoutError:
-                continue
-            logger.info("generate")
-            x += 0.1
-            await asyncio.sleep(0.01)
+    def __init__(self, loop: asyncio.AbstractEventLoop, ax: Axes, rx: aiochannel.Channel[Frame]) -> None:
+        self._loop = loop
+        self._ax = ax
+        self._xdata = deque[float]()
+        self._ydata = deque[float]()
+        self._line, *_ = self._ax.plot(self._xdata, self._ydata, "bo")
+        self._rx = rx
+        self._logger = _logger.getChild(self.__class__.__name__)
+        xlim_l, xlim_r = self._ax.get_xlim()
+        self._init_xrange = xlim_r - xlim_l
 
-    def init() -> tuple[Axes]:
-        ax.set_xlim(0, 2 * np.pi)
-        ax.set_ylim(0, 3.0)
-        return (ax,)
+    def init(self) -> tuple[Axes]:
+        return (self._ax,)
 
-    def update(frame: tuple[float, float] | None) -> tuple[Axes]:
-        if frame is None:
-            return (ax,)
-        x, y = frame
-        xdata.append(x)
-        ydata.append(y)
-        # xが単調増加だと仮定する
-        if x > 2 * np.pi:
-            xleft = xdata.popleft()
-            ydata.popleft()
-            ax.set_xlim(xleft, x)
-        line.set_data(xdata, ydata)
-        logger.info("update")
-        return (ax,)
-
-    def frames() -> Generator[tuple[float, float] | None, None, NoReturn]:
+    def frames(self) -> Generator[Frame | None, None, NoReturn]:
         while True:
             try:
-                frame_future = asyncio.run_coroutine_threadsafe(ch.get(), loop)
+                frame_future = asyncio.run_coroutine_threadsafe(self._rx.get(), self._loop)
                 yield frame_future.result(0.02)
             except TimeoutError:
                 yield None
             finally:
-                logger.info("frame")
+                self._logger.debug("frame")
 
-    def run_data_gen() -> None:
-        loop.run_until_complete(data_gen())
-        logger.info("done data_gen")
+    def update(self, frame: Frame | None) -> tuple[Axes]:
+        if frame is None:
+            return (self._ax,)
+        x, y = frame
+        self._xdata.append(x)
+        self._ydata.append(y)
+        xmin, xmax = min(self._xdata), max(self._xdata)
+        if self._init_xrange < xmax - xmin:
+            self._xdata.popleft()
+            self._ydata.popleft()
+            self._ax.set_xlim(xmin, xmax)
+        self._line.set_data(self._xdata, self._ydata)
+        self._logger.debug("update")
+        return (self._ax,)
 
-    def show() -> None:
-        _ani = FuncAnimation(fig, update, frames=frames, init_func=init, save_count=10, interval=50)
+    def show(self, fig: Figure, *args: Any, **kwargs: Any) -> None:
+        kwargs["init_func"] = self.init
+        kwargs["frames"] = self.frames
+        _ani = FuncAnimation(fig, self.update, *args, **kwargs)
         plt.show()
 
+
+async def channel_anime_frames(tx: aiochannel.Channel[ChanAnimationHandle.Frame], terminate: Event) -> None:
+    x = 0.0
+    while not terminate.is_set():
+        y = np.exp(np.sin(x))
+        try:
+            await asyncio.wait_for(tx.put((x, y)), 0.1)
+        except asyncio.TimeoutError:
+            continue
+        _logger.debug("generate")
+        x += 0.1
+        await asyncio.sleep(0.01)
+
+
+def run_ch_anime_frames(
+    loop: asyncio.AbstractEventLoop, tx: aiochannel.Channel[ChanAnimationHandle.Frame], terminate: Event
+) -> None:
+    loop.run_until_complete(channel_anime_frames(tx, terminate))
+
+
+def channel_anime() -> None:
+    logging.getLogger("asyncio").setLevel(logging.DEBUG)
+    logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+
+    fig, ax = plt.subplots()
+    ax.set_xlim(0, 2 * np.pi)
+    ax.set_ylim(0, 3)
+    ch: aiochannel.Channel[tuple[float, float]] = aiochannel.Channel(10)
+    loop = asyncio.get_event_loop()
+    terminate = Event()
+
+    handle = ChanAnimationHandle(loop, ax, ch)
+
     with ThreadPoolExecutor() as pool:
-        fut = pool.submit(run_data_gen)
-        show()
+        fut = pool.submit(run_ch_anime_frames, loop, ch, terminate)
+        handle.show(fig, save_count=10, interval=50)
         terminate.set()
-        logger.info("wait future")
         fut.result(1)
