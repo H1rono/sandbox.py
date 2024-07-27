@@ -2,7 +2,8 @@ import asyncio
 import logging
 import sys
 from collections import deque
-from concurrent.futures import ThreadPoolExecutor, TimeoutError
+from concurrent.futures import ThreadPoolExecutor
+from threading import Event
 
 import aiochannel
 import matplotlib.pyplot as plt
@@ -68,12 +69,16 @@ def channel_anime() -> None:
     xdata, ydata = deque[float](), deque[float]()
     (line,) = ax.plot(xdata, ydata, "bo")
     loop = asyncio.get_event_loop()
+    terminate = Event()
 
     async def data_gen() -> None:
         x = 0.0
-        while True:
+        while not terminate.is_set():
             y = np.exp(np.sin(x))
-            await ch.put((x, y))
+            try:
+                await asyncio.wait_for(ch.put((x, y)), 0.1)
+            except asyncio.TimeoutError:
+                continue
             logger.info("generate")
             x += 0.1
             await asyncio.sleep(0.01)
@@ -117,7 +122,8 @@ def channel_anime() -> None:
         plt.show()
 
     with ThreadPoolExecutor() as pool:
-        _fut = pool.submit(run_data_gen)
+        fut = pool.submit(run_data_gen)
         show()
+        terminate.set()
         logger.info("wait future")
-        _fut.result(1)
+        fut.result(1)
