@@ -30,6 +30,7 @@ aiohttp-polls = "polls:main"
 plot-sin = "plot:first_plot"
 plot-sample = "plot.samples:run_sample"
 live-sine = "plot.live:sinwave"
+live-chan = "plot.live:channel_anime"
 
 [build-system]
 requires = ["setuptools"]

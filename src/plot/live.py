@@ -1,7 +1,10 @@
+import asyncio
 import logging
 import sys
 from collections import deque
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 
+import aiochannel
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
@@ -54,3 +57,67 @@ def sinwave() -> None:
         fig, state.update, frames=state.frames, init_func=state.init, blit=True, save_count=10, interval=50
     )
     plt.show()
+
+
+def channel_anime() -> None:
+    logger = _logger.getChild("channel_anime")
+    logging.getLogger("asyncio").setLevel(logging.DEBUG)
+    logging.basicConfig(stream=sys.stderr, level=logging.INFO)
+    fig, ax = plt.subplots()
+    ch: aiochannel.Channel[tuple[float, float]] = aiochannel.Channel(10)
+    xdata, ydata = deque[float](), deque[float]()
+    (line,) = ax.plot(xdata, ydata, "bo")
+    loop = asyncio.get_event_loop()
+
+    async def data_gen() -> None:
+        x = 0.0
+        while True:
+            y = np.exp(np.sin(x))
+            await ch.put((x, y))
+            logger.info("generate")
+            x += 0.1
+            await asyncio.sleep(0.01)
+
+    def init() -> tuple[Axes]:
+        ax.set_xlim(0, 2 * np.pi)
+        ax.set_ylim(0, 3.0)
+        return (ax,)
+
+    def update(frame: tuple[float, float] | None) -> tuple[Axes]:
+        if frame is None:
+            return (ax,)
+        x, y = frame
+        xdata.append(x)
+        ydata.append(y)
+        # xが単調増加だと仮定する
+        if x > 2 * np.pi:
+            xleft = xdata.popleft()
+            ydata.popleft()
+            ax.set_xlim(xleft, x)
+        line.set_data(xdata, ydata)
+        logger.info("update")
+        return (ax,)
+
+    def frames() -> Generator[tuple[float, float] | None, None, NoReturn]:
+        while True:
+            try:
+                frame_future = asyncio.run_coroutine_threadsafe(ch.get(), loop)
+                yield frame_future.result(0.02)
+            except TimeoutError:
+                yield None
+            finally:
+                logger.info("frame")
+
+    def run_data_gen() -> None:
+        loop.run_until_complete(data_gen())
+        logger.info("done data_gen")
+
+    def show() -> None:
+        _ani = FuncAnimation(fig, update, frames=frames, init_func=init, save_count=10, interval=50)
+        plt.show()
+
+    with ThreadPoolExecutor() as pool:
+        _fut = pool.submit(run_data_gen)
+        show()
+        logger.info("wait future")
+        _fut.result(1)
